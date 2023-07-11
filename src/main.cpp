@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
-#include <pulseSensorPlayground.h>
+#include <PulseSensorPlayground.h>
 
 
 
@@ -43,7 +43,13 @@ void setup() {
 
 void loop() { 
   readBodyTemp();
-  readPulse();
+  int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
+  // "myBPM" hold this BPM value now.
+  if (pulseSensor.sawStartOfBeat()) {            // Constantly test to see if "a beat happened".
+    myBPM = pulseSensor.getBeatsPerMinute();                 
+  }
+  Serial.println(myBPM); 
+  delay(20);
 }
 
 
@@ -54,11 +60,5 @@ void readBodyTemp() {
 }
 
 void readPulse() {
-  int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
-  // "myBPM" hold this BPM value now.
-  if (pulseSensor.sawStartOfBeat()) {            // Constantly test to see if "a beat happened".
-    myBPM = pulseSensor.getBeatsPerMinute();                 
-  }
-  Serial.println(myBPM); 
-  delay(10);                    // considered best practice in a simple sketch.
+                    // considered best practice in a simple sketch.
 }
