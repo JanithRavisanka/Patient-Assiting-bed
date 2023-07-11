@@ -90,6 +90,7 @@ void loop() {
   readBodyTemp();
   readPulse();
   readDHT();
+  printTime();
 }
 
 
@@ -121,5 +122,11 @@ void createDisplay(){
   lcd.print("BPM: " + String(random(60, 100)));
   lcd.setCursor(0, 1);
   lcd.print("Body Temp: " + String(dht.readHumidity()) + "C");
+}
+
+//fucntionn to output current time to serial monitor
+void printTime() {
+  rtc.refresh();
+  Serial1.println(String(rtc.hour()) + ":" + String(rtc.minute()) + ":" + String(rtc.second()));
 }
 
