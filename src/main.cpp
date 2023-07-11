@@ -18,11 +18,10 @@ void readBodyTemp();
 
 
 //define serial pins as  2, 3
-SoftwareSerial mySerial(6, 7); // RX, TX
+// SoftwareSerial mySerial(6, 7); // RX, TX
 
 void setup() {
-  mySerial.begin(9600);
-  Serial.begin(9600);
+  Serial1.begin(9600);
   bodyTempSensor.begin();
 }
 
@@ -34,6 +33,6 @@ void loop() {
 
 void readBodyTemp() {
   bodyTempSensor.requestTemperatures();
-  mySerial.println(bodyTempSensor.getTempCByIndex(0));
+  Serial1.println(bodyTempSensor.getTempCByIndex(0));
   delay(10);
 }
