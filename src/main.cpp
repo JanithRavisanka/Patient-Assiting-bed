@@ -24,7 +24,7 @@ int Threshold = 550;
 void readBodyTemp();
 
 //fuction to read pulse
-int readPulse();
+void readPulse();
 
 
 void setup() {
