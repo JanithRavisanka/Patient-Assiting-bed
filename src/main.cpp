@@ -43,18 +43,16 @@ void setup() {
 
 
 void loop() { 
-  readBodyTemp();
+  
    // Calls function on our pulseSensor object that returns BPM as an "int".
   // "myBPM" hold this BPM value now.
-  if (pulseSensor.sawStartOfBeat()) {  
-    int myBPM = pulseSensor.getBeatsPerMinute();           // Constantly test to see if "a beat happened".
-    myBPM = pulseSensor.getBeatsPerMinute();     
-    Serial.println("bpm = " + String(myBPM));            
-  }
-   
-  // int bpm = readPulse();
-  // Serial1.println("bpm = " + String(bpm));
-  // delay(20);
+  // if (pulseSensor.sawStartOfBeat()) {  
+  //   int myBPM = pulseSensor.getBeatsPerMinute()           // Constantly test to see if "a beat happened".   
+  //   Serial.println("bpm = " + String(myBPM));            
+  // }
+  
+  readBodyTemp();
+  readPulse();
 }
 
 
@@ -64,9 +62,9 @@ void readBodyTemp() {
   delay(10);
 }
 //create function to output random hr values without sensor readings
-int readPulse() {
+void readPulse() {
   int pulse = random(60, 100);
-  return pulse;
+  Serial1.println("pulse = " + String(pulse));
 }
 
 
