@@ -119,7 +119,7 @@ void createDisplay(){
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("BPM: " + String(random(60, 100)));
-  lcd.setCursor(1, 0);
+  lcd.setCursor(0, 1);
   lcd.print("Body Temp: " + String(dht.readHumidity()) + "C");
 }
 
