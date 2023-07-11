@@ -22,7 +22,7 @@ int Threshold = 550;
 
 //DHT sensor
 #define DHTPIN 8
-#define DHTTYPE DHT11
+#define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
 
@@ -95,7 +95,7 @@ void readPulse() {
 void readDHT() {
   float h = dht.readHumidity();
   float t = dht.readTemperature();
-  Serial1.println("h = " + String(h));
-  Serial1.println("t = " + String(t));
+  Serial1.println("humidity = " + String(h));
+  Serial1.println("bodytemp = " + String(t));
 }
 
