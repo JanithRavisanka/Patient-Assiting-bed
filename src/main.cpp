@@ -1,3 +1,4 @@
+#define USE_ARDUINO_INTERRUPTS true
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <DallasTemperature.h>
@@ -12,7 +13,7 @@ OneWire bTempPin(bodyTempPin);
 DallasTemperature bodyTempSensor(&bTempPin);
 
 //heart pulse sensor
-#define USE_ARDUINO_INTERRUPTS true
+
 PulseSensorPlayground pulseSensor;
 const int PulseWire = A2;       // PulseSensor PURPLE WIRE connected to ANALOG PIN 0
 const int LED = LED_BUILTIN;          // The on-board Arduino LED, close to PIN 13.
@@ -43,15 +44,17 @@ void setup() {
 
 void loop() { 
   readBodyTemp();
-  // int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
-  // // "myBPM" hold this BPM value now.
-  // if (pulseSensor.sawStartOfBeat()) {            // Constantly test to see if "a beat happened".
-  //   myBPM = pulseSensor.getBeatsPerMinute();                 
-  // }
-  // Serial.println(myBPM); 
-  int bpm = readPulse();
-  Serial1.println("bpm = " + String(bpm));
-  delay(20);
+   // Calls function on our pulseSensor object that returns BPM as an "int".
+  // "myBPM" hold this BPM value now.
+  if (pulseSensor.sawStartOfBeat()) {  
+    int myBPM = pulseSensor.getBeatsPerMinute();           // Constantly test to see if "a beat happened".
+    myBPM = pulseSensor.getBeatsPerMinute();     
+    Serial.println("bpm = " + String(myBPM));            
+  }
+   
+  // int bpm = readPulse();
+  // Serial1.println("bpm = " + String(bpm));
+  // delay(20);
 }
 
 
