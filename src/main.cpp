@@ -4,6 +4,8 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
 #include <PulseSensorPlayground.h>
+#include "DHT.h"
+
 
 
 
@@ -13,11 +15,15 @@ OneWire bTempPin(bodyTempPin);
 DallasTemperature bodyTempSensor(&bTempPin);
 
 //heart pulse sensor
-
 PulseSensorPlayground pulseSensor;
 const int PulseWire = A2;       // PulseSensor PURPLE WIRE connected to ANALOG PIN 0
 const int LED = LED_BUILTIN;          // The on-board Arduino LED, close to PIN 13.
 int Threshold = 550;  
+
+//DHT sensor
+#define DHTPIN 8
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
 
 
 //function to read temperature
@@ -26,9 +32,15 @@ void readBodyTemp();
 //fuction to read pulse
 void readPulse();
 
+//function to read humidity and room temperature
+void readDHT();
+
 
 void setup() {
+  //serial connection with NodeMCU
   Serial1.begin(9600);
+
+  //body temp sensor
   bodyTempSensor.begin();
 
   //pulse sensor
@@ -39,6 +51,16 @@ void setup() {
     Serial.println("We created a pulseSensor Object !");
   }
 
+  //dht sensor
+  dht.begin();
+
+  if (isnan(dht.readHumidity())) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    //create infinite while loop
+    while (1){
+      Serial1.println("Connecting to DHT sensor...");
+    }
+  }
 }
 
 
@@ -53,9 +75,12 @@ void loop() {
   
   readBodyTemp();
   readPulse();
+  readDHT();
 }
 
 
+
+//read body temperature
 void readBodyTemp() {
   bodyTempSensor.requestTemperatures();
   Serial1.println("bTemp = " + String(bodyTempSensor.getTempCByIndex(0)));
@@ -67,4 +92,10 @@ void readPulse() {
   Serial1.println("pulse = " + String(pulse));
 }
 
+void readDHT() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  Serial1.println("h = " + String(h));
+  Serial1.println("t = " + String(t));
+}
 
