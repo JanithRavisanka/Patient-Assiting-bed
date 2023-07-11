@@ -23,7 +23,7 @@ int Threshold = 550;
 void readBodyTemp();
 
 //fuction to read pulse
-void readPulse();
+int readPulse();
 
 
 void setup() {
@@ -43,22 +43,27 @@ void setup() {
 
 void loop() { 
   readBodyTemp();
-  int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
-  // "myBPM" hold this BPM value now.
-  if (pulseSensor.sawStartOfBeat()) {            // Constantly test to see if "a beat happened".
-    myBPM = pulseSensor.getBeatsPerMinute();                 
-  }
-  Serial.println(myBPM); 
+  // int myBPM = pulseSensor.getBeatsPerMinute();  // Calls function on our pulseSensor object that returns BPM as an "int".
+  // // "myBPM" hold this BPM value now.
+  // if (pulseSensor.sawStartOfBeat()) {            // Constantly test to see if "a beat happened".
+  //   myBPM = pulseSensor.getBeatsPerMinute();                 
+  // }
+  // Serial.println(myBPM); 
+  int bpm = readPulse();
+  Serial1.println("bpm = " + String(bpm));
   delay(20);
 }
 
 
 void readBodyTemp() {
   bodyTempSensor.requestTemperatures();
-  Serial1.println(bodyTempSensor.getTempCByIndex(0));
+  Serial1.println("bTemp = " + String(bodyTempSensor.getTempCByIndex(0)));
   delay(10);
 }
-
-void readPulse() {
-                    // considered best practice in a simple sketch.
+//create function to output random hr values without sensor readings
+int readPulse() {
+  int pulse = random(60, 100);
+  return pulse;
 }
+
+
