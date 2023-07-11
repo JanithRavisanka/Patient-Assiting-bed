@@ -21,7 +21,12 @@ DallasTemperature bodyTempSensor(&bTempPin);
 PulseSensorPlayground pulseSensor;
 const int PulseWire = A2;       // PulseSensor PURPLE WIRE connected to ANALOG PIN 0
 const int LED = LED_BUILTIN;          // The on-board Arduino LED, close to PIN 13.
-int Threshold = 550;  
+int Threshold = 650;  
+int count = 0;
+int bpm = 0;
+long int lastPulse = 0;
+int signal = 0;
+int lastBPM = 0;
 
 //DHT sensor
 #define DHTPIN 8
@@ -53,12 +58,12 @@ void setup() {
   bodyTempSensor.begin();
 
   //pulse sensor
-  pulseSensor.analogInput(PulseWire);   
-  pulseSensor.blinkOnPulse(LED);       //auto-magically blink Arduino's LED with heartbeat.
-  pulseSensor.setThreshold(Threshold);  
-  if (pulseSensor.begin()) {
-    Serial.println("We created a pulseSensor Object !");
-  }
+  // pulseSensor.analogInput(PulseWire);   
+  // pulseSensor.blinkOnPulse(LED);       //auto-magically blink Arduino's LED with heartbeat.
+  // pulseSensor.setThreshold(Threshold);  
+  // if (pulseSensor.begin()) {
+  //   Serial.println("We created a pulseSensor Object !");
+  // }
 
   //dht sensor
   dht.begin();
@@ -90,7 +95,9 @@ void loop() {
   readBodyTemp();
   readPulse();
   readDHT();
+  createDisplay();
   printTime();
+
 }
 
 
@@ -103,8 +110,19 @@ void readBodyTemp() {
 }
 //create function to output random hr values without sensor readings
 void readPulse() {
-  int pulse = random(60, 100);
-  Serial1.println("pulse = " + String(pulse));
+  // int pulse = random(60, 100);
+  // Serial1.println("pulse = " + String(pulse));
+  signal = analogRead(PulseWire);
+  if(signal > Threshold && millis() - lastPulse> 300){
+    count++;
+    lastBPM = millis(); //get the last time a pulse was read
+  }
+  if(millis() - lastBPM > 60000){
+    bpm = count;
+    count = 0; //reset count
+    lastBPM = millis(); //get the last time a BPM was read
+    Serial1.println("bpm = " + String(bpm));
+  }
 }
 
 void readDHT() {
@@ -122,9 +140,10 @@ void createDisplay(){
   lcd.print("BPM: " + String(random(60, 100)));
   lcd.setCursor(0, 1);
   lcd.print("Body Temp: " + String(dht.readHumidity()) + "C");
+
 }
 
-//fucntionn to output current time to serial monitor
+//function to output current time to serial monitor
 void printTime() {
   rtc.refresh();
   Serial1.println(String(rtc.hour()) + ":" + String(rtc.minute()) + ":" + String(rtc.second()));
