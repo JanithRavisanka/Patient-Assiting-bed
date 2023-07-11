@@ -5,6 +5,9 @@
 #include <OneWire.h>
 #include <PulseSensorPlayground.h>
 #include "DHT.h"
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+#include <uRTCLib.h>
 
 
 
@@ -25,6 +28,10 @@ int Threshold = 550;
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
+//RTC and LCD
+uRTCLib rtc(0x68);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
 
 //function to read temperature
 void readBodyTemp();
@@ -34,6 +41,8 @@ void readPulse();
 
 //function to read humidity and room temperature
 void readDHT();
+
+void createDisplay();
 
 
 void setup() {
@@ -61,6 +70,11 @@ void setup() {
       Serial1.println("Connecting to DHT sensor...");
     }
   }
+
+  //display and rtc
+  URTCLIB_WIRE.begin();
+  lcd.init();
+  lcd.backlight();
 }
 
 
@@ -97,5 +111,15 @@ void readDHT() {
   float t = dht.readTemperature();
   Serial1.println("humidity = " + String(h));
   Serial1.println("bodytemp = " + String(t));
+}
+
+
+void createDisplay(){
+  rtc.refresh();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("BPM: " + String(random(60, 100)));
+  lcd.setCursor(1, 0);
+  lcd.print("Body Temp: " + String(dht.readHumidity()) + "C");
 }
 
