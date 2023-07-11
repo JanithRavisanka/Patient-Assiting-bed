@@ -24,9 +24,9 @@ const int LED = LED_BUILTIN;          // The on-board Arduino LED, close to PIN 
 int Threshold = 650;  
 int count = 0;
 int bpm = 0;
-long int lastPulse = 0;
+unsigned long lastPulse = 0;
 int signal = 0;
-int lastBPM = 0;
+unsigned long lastBPM = 0;
 
 //DHT sensor
 #define DHTPIN 8
@@ -115,7 +115,7 @@ void readPulse() {
   signal = analogRead(PulseWire);
   if(signal > Threshold && millis() - lastPulse> 300){
     count++;
-    lastBPM = millis(); //get the last time a pulse was read
+    lastPulse = millis(); //get the last time a pulse was read
   }
   if(millis() - lastBPM > 60000){
     bpm = count;
