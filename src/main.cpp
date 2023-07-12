@@ -133,8 +133,12 @@ void readPulse() {
 }
 
 void readDHT() {
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+  // float h = dht.readHumidity();
+  // float t = dht.readTemperature();
+  //random values for testing
+  float h = random(60, 100);
+  float t = random(60, 100);
+  
   Serial1.println("humidity = " + String(h));
   Serial1.println("bodytemp = " + String(t));
 }
