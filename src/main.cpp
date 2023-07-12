@@ -33,9 +33,12 @@ unsigned long lastBPM = 0;
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
-//RTC and LCD
+//RTC
 uRTCLib rtc(0x68);
+
+//LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+uint8_t heart[8] = {0x0,0xa,0x1f,0x1f,0xe,0x4,0x0};
 
 
 //function to read temperature
@@ -49,9 +52,12 @@ void readDHT();
 
 void createDisplay();
 
+void printTime();
+
 
 void setup() {
   //serial connection with NodeMCU
+  Serial.begin(9600);
   Serial1.begin(9600);
 
   //body temp sensor
@@ -80,6 +86,7 @@ void setup() {
   URTCLIB_WIRE.begin();
   lcd.init();
   lcd.backlight();
+  lcd.createChar(0, heart);
 }
 
 
@@ -136,8 +143,8 @@ void readDHT() {
 void createDisplay(){
   rtc.refresh();
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("BPM: " + String(random(60, 100)));
+  lcd.setCursor(1, 0);
+  lcd.print(0);
   lcd.setCursor(0, 1);
   lcd.print("Body Temp: " + String(dht.readHumidity()) + "C");
 
