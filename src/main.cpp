@@ -27,6 +27,7 @@ int bpm = 0;
 unsigned long lastPulse = 0;
 int signal = 0;
 unsigned long lastBPM = 0;
+int currentBPM = 0;
 
 //DHT sensor
 #define DHTPIN 8
@@ -48,11 +49,14 @@ void readBodyTemp();
 void readPulse();
 
 //function to read humidity and room temperature
-void readDHT();
+float readDHT();
 
 void createDisplay();
 
 void printTime();
+
+void sendAlerts(String str);
+
 
 
 void setup() {
@@ -99,11 +103,25 @@ void loop() {
   //   Serial.println("bpm = " + String(myBPM));            
   // }
   
-  readBodyTemp();
-  readPulse();
-  readDHT();
+  // readBodyTemp();
+  // readPulse();
+  // readDHT();
   createDisplay();
-  printTime();
+  // printTime();
+
+
+  bpm = 0;
+  if(bpm>0){
+    float humidity = dht.readHumidity();
+    float roomTemp = dht.readTemperature();
+    float bodyTemp = bodyTempSensor.getTempCByIndex(0);
+    currentBPM = bpm;  //show curent bpm in display
+
+    Serial1.println("humidity =" + String(humidity));
+    Serial1.println("roomTemp=" + String(roomTemp));
+    Serial1.println("bodyTemp=" + String(bodyTemp));
+    Serial1.println("bpm=" + String(bpm));
+  }
 
 }
 
@@ -112,7 +130,7 @@ void loop() {
 //read body temperature
 void readBodyTemp() {
   bodyTempSensor.requestTemperatures();
-  Serial1.println("bTemp = " + String(bodyTempSensor.getTempCByIndex(0)));
+  Serial1.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
   delay(10);
 }
 //create function to output random hr values without sensor readings
@@ -128,19 +146,21 @@ void readPulse() {
     bpm = count;
     count = 0; //reset count
     lastBPM = millis(); //get the last time a BPM was read
-    Serial1.println("bpm = " + String(bpm));
+    Serial1.println("bpm=" + String(bpm));
   }
 }
 
-void readDHT() {
+float readDHT() {
   // float h = dht.readHumidity();
   // float t = dht.readTemperature();
   //random values for testing
   float h = random(60, 100);
   float t = random(60, 100);
-  
-  Serial1.println("humidity = " + String(h));
-  Serial1.println("bodytemp = " + String(t));
+
+  // Serial1.println("humidity =" + String(h));
+
+  return h,t;
+  // Serial1.println("roomTemp=" + String(t));
 }
 
 
@@ -159,4 +179,16 @@ void printTime() {
   rtc.refresh();
   Serial1.println(String(rtc.hour()) + ":" + String(rtc.minute()) + ":" + String(rtc.second()));
 }
+//function to split string "=" and make it into a key value pair
+
+
+
+//function to read serial input string start with "#" only
+void sendAlerts(String str){
+  if(str.startsWith("#")){
+    //send alerts using gsm module
+  }
+}
+
+
 
