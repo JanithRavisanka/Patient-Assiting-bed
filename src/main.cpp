@@ -259,7 +259,6 @@ void printTime() {
   rtc.refresh();
   Serial1.println(String(rtc.hour()) + ":" + String(rtc.minute()) + ":" + String(rtc.second()));
 }
-//function to split string "=" and make it into a key value pair
 
 
 
@@ -316,6 +315,7 @@ void checkBodyTemp(float bodyTemp){
   }
 }
 
+//control bed lifting function
 void bedLiftingFunction(){
   if(digitalRead(bedUpPin)==HIGH && digitalRead(motorPinDown)==HIGH){
     invalid = true;
@@ -338,7 +338,7 @@ void bedLiftingFunction(){
 
 
 
-
+//to find patient is on the bed or not
 int isWeightDetected() {
   const int serialPrintInterval = 1000;
 
@@ -377,6 +377,7 @@ int overHumidity(){
     return 0;
 }
 
+//to find over temperature or not
 int overTemperature(){
   // delay(10);
   // dht.temperature().getEvent(&eventT);
