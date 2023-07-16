@@ -40,16 +40,21 @@ const int RELAYPIN = 7;    // MCU > LED pin
 HX711_ADC LoadCell(HX711_dout, HX711_sck);
 
 //touch sensors
-const int toggleModePin = 11;
-const int bedUpPin = 12;
-const int bedDownPin = 13;
+// const int toggleModePin = 11; 
+// const int bedUpPin = 12;
+// const int bedDownPin = 13;
+
+const int toggleModePin = 12;
+const int bedUpPin = 45;
+const int bedDownPin = 46;
 bool invalid = false;
 unsigned long t = 0;
 bool newDataReady = 0;
+String toggleMode = "up";
 
 //motor
-const int motorPinUp = 1; //up
-const int motorPinDown = 2; //down
+const int motorPinUp = 27; //up
+const int motorPinDown = 29; //down
 unsigned long curentMotorPos = 0;
 
 unsigned long functionStartTime = 0;
@@ -117,6 +122,8 @@ void printSignature(uint8_t *buf, int len);
 
 void printVR(uint8_t *buf);
 
+void updateSerial();
+
 
 void setup() {
   //serial connection with NodeMCU
@@ -143,6 +150,10 @@ void setup() {
   if(myVR.load((uint8_t)offRecord) >= 0){
     Serial.println("offRecord loaded");
   }
+
+  //mortor
+  pinMode(motorPinUp, OUTPUT);
+  pinMode(motorPinDown, OUTPUT);
 
 
   //touch sensors
@@ -210,6 +221,19 @@ void setup() {
 
 void loop() { 
   
+
+  if(digitalRead(toggleModePin)==HIGH && toggleMode=="up"){
+    toggleMode = "down";
+    digitalWrite(motorPinUp, LOW);
+    digitalWrite(motorPinDown, HIGH);
+  }
+  else if(digitalRead(toggleModePin)==HIGH && toggleMode=="down"){
+    toggleMode = "up";
+    digitalWrite(motorPinUp, HIGH);
+    digitalWrite(motorPinDown, LOW);
+  }
+
+
 
   createDisplay();
   printTime();
@@ -476,36 +500,7 @@ void checkPatientThere(){
 }
 
 
-
-{
-  Serial.println("VR Index\tGroup\tRecordNum\tSignature");
-
-  Serial.print(buf[2], DEC);
-  Serial.print("\t\t");
-
-  if(buf[0] == 0xFF){
-    Serial.print("NONE");
-  }
-  else if(buf[0]&0x80){
-    Serial.print("UG ");
-    Serial.print(buf[0]&(~0x80), DEC);
-  }
-  else{
-    Serial.print("SG ");
-    Serial.print(buf[0], DEC);
-  }
-  Serial.print("\t");
-
-  Serial.print(buf[1], DEC);
-  Serial.print("\t\t");
-  if(buf[3]>0){
-    printSignature(buf+4, buf[3]);
-  }
-  else{
-    Serial.print("NONE");
-  }
-  Serial.println("\r\n");
-}
+ 
 
 //vr recog function
 void vrRecog(){
