@@ -106,7 +106,7 @@ String epochTimeConverter(unsigned long epochTime){
 
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("Connecting to Wi-Fi");
     while (WiFi.status() != WL_CONNECTED){

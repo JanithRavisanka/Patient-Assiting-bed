@@ -10,21 +10,42 @@
 #include <uRTCLib.h>
 #include <SoftwareSerial.h>
 #include <HX711_ADC.h>
+#include "VoiceRecognitionV3.h"
+
+
+
+//vr module
+VR myVR(10, 11);    // 2:RX 3:TX, you can choose your favorite pins.
+
+uint8_t records[7]; // save record
+uint8_t buf[64];
+
+
+#define onRecord    (0)
+#define offRecord   (1) 
+#define onRecord1    (2)
+#define offRecord1   (3)
+#define onRecord2   (4)
+#define offRecord2   (5)
+
 
 
 
 // Pins fan + Load cell
 //DHT pin declared above 
-const int HX711_dout = D4;  // MCU > HX711 dout pin
-const int HX711_sck = D5;  // MCU > HX711 sck pin
-const int RELAYPIN = D1;    // MCU > LED pin
-
+  //Load cell
+const int HX711_dout = 25;  // MCU > HX711 dout pin
+const int HX711_sck = 23;  // MCU > HX711 sck pin
+const int RELAYPIN = 7;    // MCU > LED pin
+HX711_ADC LoadCell(HX711_dout, HX711_sck);
 
 //touch sensors
 const int toggleModePin = 11;
 const int bedUpPin = 12;
 const int bedDownPin = 13;
 bool invalid = false;
+unsigned long t = 0;
+bool newDataReady = 0;
 
 //motor
 const int motorPinUp = 1; //up
@@ -92,17 +113,44 @@ int overHumidity();
 
 int overTemperature();
 
+void printSignature(uint8_t *buf, int len);
+
+void printVR(uint8_t *buf);
 
 
 void setup() {
+  //serial connection with NodeMCU
+  Serial.begin(115200);
+  Serial1.begin(115200);
+
+  //vr module
+  myVR.begin(9600);
+  Serial.println("Elechouse Voice Recognition V3 Module\r\nControl LED sample");
+  // pinMode(led, OUTPUT);
+
+  if(myVR.clear() == 0){
+    Serial.println("Recognizer cleared.");
+  }else{
+    Serial.println("Not find VoiceRecognitionModule.");
+    Serial.println("Please check connection and restart Arduino.");
+    while(1);
+  }
+  
+  if(myVR.load((uint8_t)onRecord) >= 0){
+    Serial.println("onRecord loaded");
+  }
+  
+  if(myVR.load((uint8_t)offRecord) >= 0){
+    Serial.println("offRecord loaded");
+  }
+
+
   //touch sensors
   pinMode(toggleModePin, INPUT);
   pinMode(bedUpPin, INPUT);
   pinMode(bedDownPin, INPUT);
 
-  //serial connection with NodeMCU
-  Serial.begin(9600);
-  Serial1.begin(9600);
+
 
   //serial connection for gsm module
   mySerial.begin(9600);
@@ -163,30 +211,32 @@ void setup() {
 void loop() { 
   
 
-  // createDisplay();
-  // // printTime();
+  createDisplay();
+  printTime();
 
 
-  // bpm = 0;
-  // if(bpm>0){
-  //   float humidity = dht.readHumidity();
-  //   float roomTemp = dht.readTemperature();
-  //   float bodyTemp = bodyTempSensor.getTempCByIndex(0);
-  //   currentBPM = bpm;  //show curent bpm in display
+  bpm = 0;
+  if(bpm>0){
+    float humidity = dht.readHumidity();
+    float roomTemp = dht.readTemperature();
+    float bodyTemp = bodyTempSensor.getTempCByIndex(0);
+    currentBPM = bpm;  //show curent bpm in display
 
-  //   Serial1.println("humidity =" + String(humidity));
-  //   Serial1.println("roomTemp=" + String(roomTemp));
-  //   Serial1.println("bodyTemp=" + String(bodyTemp));
-  //   Serial1.println("bpm=" + String(bpm));
-  // }
+    Serial1.println("humidity =" + String(humidity));
+    Serial1.println("roomTemp=" + String(roomTemp));
+    Serial1.println("bodyTemp=" + String(bodyTemp));
+    Serial1.println("bpm=" + String(bpm));
+  }
 
-  // //only check bpm and body temp critical in 5 min intervals
-  // if(millis() - lastBPM > 300000){
-  //   checkBPM(bpm);
-  //   checkBodyTemp(bodyTempSensor.getTempCByIndex(0));
-  // } 
+  //only check bpm and body temp critical in 5 min intervals
+  if(millis() - lastBPM > 300000){
+    checkBPM(bpm);
+    checkBodyTemp(bodyTempSensor.getTempCByIndex(0));
+  } 
 
   bedLiftingFunction(); 
+
+  checkPatientThere();
 
   //relay + dht to on the fan 
   int isWeight = isWeightDetected();
@@ -202,6 +252,9 @@ void loop() {
     // Serial.println("neither");
     digitalWrite(RELAYPIN, LOW);
   }  
+
+  //vr recog
+  vrRecog();
 
 }
 
@@ -336,6 +389,25 @@ void bedLiftingFunction(){
   }
 }
 
+//use below function if above function is not working
+//bed lifting function
+void bedLiftingFunction2(){
+  if((digitalRead(bedUpPin)==HIGH && digitalRead(bedDownPin==HIGH))||(digitalRead(motorPinDown)==HIGH && digitalRead(motorPinUp==HIGH))){
+    invalid = true;
+    digitalWrite(motorPinUp, LOW);
+    digitalWrite(motorPinDown, LOW);
+  }else{
+    invalid = false;
+  }
+  if(digitalRead(bedUpPin)==HIGH && !invalid){
+    digitalWrite(motorPinUp, HIGH);
+  }
+  if(digitalRead(bedDownPin)==HIGH && !invalid){
+    digitalWrite(motorPinDown, HIGH);
+  }
+
+}
+
 
 
 //to find patient is on the bed or not
@@ -350,6 +422,7 @@ int isWeightDetected() {
     if (millis() > t + serialPrintInterval) {
       float i = LoadCell.getData();
       if (i > 400.0) {
+        functionStartTime = millis();
         return 1;
       }
       newDataReady = false;
@@ -385,7 +458,7 @@ int overTemperature(){
     Serial.println(F("Error reading temperature!"));
   }
   else {
-    if(eventT.temperature>30.0){
+    if(dht.readTemperature()>30.0){
       return 1;
     }
   }
@@ -394,4 +467,71 @@ int overTemperature(){
 
 
 
+//if patient not in bed for 5 min send alert
+void checkPatientThere(){
+  if(millis() - functionStartTime > 300000){
+    //send alert
+    sendMessage("Patient: Janith is not on the bed");
+  }
+}
 
+
+
+{
+  Serial.println("VR Index\tGroup\tRecordNum\tSignature");
+
+  Serial.print(buf[2], DEC);
+  Serial.print("\t\t");
+
+  if(buf[0] == 0xFF){
+    Serial.print("NONE");
+  }
+  else if(buf[0]&0x80){
+    Serial.print("UG ");
+    Serial.print(buf[0]&(~0x80), DEC);
+  }
+  else{
+    Serial.print("SG ");
+    Serial.print(buf[0], DEC);
+  }
+  Serial.print("\t");
+
+  Serial.print(buf[1], DEC);
+  Serial.print("\t\t");
+  if(buf[3]>0){
+    printSignature(buf+4, buf[3]);
+  }
+  else{
+    Serial.print("NONE");
+  }
+  Serial.println("\r\n");
+}
+
+//vr recog function
+void vrRecog(){
+  int ret;
+  ret = myVR.recognize(buf, 50);
+  if(ret>0){
+    switch(buf[1]){
+      case onRecord:
+      case onRecord1:
+      case onRecord2:
+
+
+        /** turn on LED */
+        // digitalWrite(led, HIGH);
+        break;
+      case offRecord:
+      case offRecord1:
+      case offRecord2:
+        /** turn off LED*/
+        // digitalWrite(led, LOW);
+        break;
+      default:
+        Serial.println("Record function undefined");
+        break;
+    }
+    /** voice recognized */
+    // printVR(buf);
+  }
+}
