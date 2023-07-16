@@ -15,7 +15,7 @@
 
 
 //vr module
-VR myVR(10, 11);    // 2:RX 3:TX, you can choose your favorite pins.
+VR myVR(10, 36);    // 2:RX 3:TX, you can choose your favorite pins.
 
 uint8_t records[7]; // save record
 uint8_t buf[64];
@@ -45,17 +45,17 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 // const int bedDownPin = 13;
 
 const int toggleModePin = 12;
-const int bedUpPin = 45;
+const int bedUpPin = 11;
 const int bedDownPin = 46;
 bool invalid = false;
 unsigned long t = 0;
 bool newDataReady = 0;
 String toggleMode = "up";
+unsigned long touchInterval = 0;
 
 //motor
 const int motorPinUp = 27; //up
 const int motorPinDown = 29; //down
-unsigned long curentMotorPos = 0;
 
 unsigned long functionStartTime = 0;
 unsigned long functionEndTime = 0;
@@ -140,7 +140,7 @@ void setup() {
   }else{
     Serial.println("Not find VoiceRecognitionModule.");
     Serial.println("Please check connection and restart Arduino.");
-    while(1);
+    // while(1);
   }
   
   if(myVR.load((uint8_t)onRecord) >= 0){
@@ -150,7 +150,6 @@ void setup() {
   if(myVR.load((uint8_t)offRecord) >= 0){
     Serial.println("offRecord loaded");
   }
-
   //mortor
   pinMode(motorPinUp, OUTPUT);
   pinMode(motorPinDown, OUTPUT);
@@ -222,15 +221,30 @@ void setup() {
 void loop() { 
   
 
-  if(digitalRead(toggleModePin)==HIGH && toggleMode=="up"){
+  if(digitalRead(toggleModePin)==HIGH && toggleMode=="up" && (millis() - touchInterval > 1000)){
+    touchInterval = millis();
+    Serial.println("Toggle " + toggleMode);
     toggleMode = "down";
     digitalWrite(motorPinUp, LOW);
     digitalWrite(motorPinDown, HIGH);
+    Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
+
   }
-  else if(digitalRead(toggleModePin)==HIGH && toggleMode=="down"){
+  else if(digitalRead(toggleModePin)==HIGH && toggleMode=="down" && (millis() - touchInterval > 1000)){
+    touchInterval = millis();
+    Serial.println("Toggle " + toggleMode);
     toggleMode = "up";
     digitalWrite(motorPinUp, HIGH);
     digitalWrite(motorPinDown, LOW);
+    Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
+  }else if(digitalRead(bedUpPin) ==HIGH && (millis() - touchInterval > 1000)){
+    touchInterval = millis();
+    digitalWrite(motorPinUp, LOW);
+    digitalWrite(motorPinDown, LOW);
+    Serial.println("pin 11: " + String(digitalRead(bedUpPin)));
+  }else if(digitalRead(bedUpPin) ==LOW && (millis() - touchInterval > 1000)){
+    touchInterval = millis();
+    Serial.println("pin 11: " + String(digitalRead(bedUpPin)));
   }
 
 
@@ -258,14 +272,14 @@ void loop() {
     checkBodyTemp(bodyTempSensor.getTempCByIndex(0));
   } 
 
-  bedLiftingFunction(); 
+  // bedLiftingFunction(); 
 
   checkPatientThere();
 
   //relay + dht to on the fan 
   int isWeight = isWeightDetected();
-  int ishumid  = overhumidity();
-  int istemp   = overtemperature();
+  int ishumid  = overHumidity();
+  int istemp   = overTemperature();
     
   if ((isWeight == 1 && ishumid==1) || (isWeight == 1 && istemp==1)) {
     // Serial.println("both");
