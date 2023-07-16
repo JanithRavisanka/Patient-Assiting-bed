@@ -294,6 +294,8 @@ void loop() {
   //vr recog
   vrRecog();
 
+  sendWarning();
+
 }
 
 
@@ -542,5 +544,14 @@ void vrRecog(){
     }
     /** voice recognized */
     // printVR(buf);
+  }
+}
+
+//send messages input by serial1
+void sendWarning(){
+  if(Serial1.available()){
+    String str = Serial1.readStringUntil('\n');
+    sendMessage(str);
+    Serial.println(str);
   }
 }
