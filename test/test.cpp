@@ -13,6 +13,17 @@
 #include "VoiceRecognitionV3.h"
 
 
+//display
+#if defined(ARDUINO) && ARDUINO >= 100
+#define printByte(args)  write(args);
+#else
+#define printByte(args)  print(args,BYTE);
+#endif
+
+uint8_t heart[8] = {0x0,0xa,0x1f,0x1f,0xe,0x4,0x0};
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+
 
 //vr module
 VR myVR(10, 36);    // 2:RX 3:TX, you can choose your favorite pins.
@@ -86,9 +97,6 @@ DHT dht(DHTPIN, DHTTYPE);
 //RTC
 uRTCLib rtc(0x68);
 
-//LCD
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-uint8_t heart[8] = {0x0,0xa,0x1f,0x1f,0xe,0x4,0x0};
 
 
 //GSM module
@@ -179,8 +187,11 @@ void setup() {
     }
   }
 
-  //display and rtc
+  //RTC
   URTCLIB_WIRE.begin();
+
+  //LCD
+  lcd.init();
   lcd.init();
   lcd.backlight();
   lcd.createChar(0, heart);
@@ -238,7 +249,7 @@ void loop() {
     digitalWrite(motorPinDown, LOW);
     Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
   }
-  // else if(digitalRead(bedUpPin) ==HIGH && (millis() - touchInterval > 1000)){
+  //else if(digitalRead(bedUpPin) ==HIGH && (millis() - touchInterval > 1000)){
   //   touchInterval = millis();
   //   digitalWrite(motorPinUp, LOW);
   //   digitalWrite(motorPinDown, LOW);
@@ -251,7 +262,36 @@ void loop() {
 
 
   createDisplay();
-  printTime();
+  // printTime();
+
+    rtc.refresh();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  if(rtc.month() < 10){
+    lcd.print("0" + String(rtc.month()));
+  }else{
+    lcd.print(rtc.month());
+  }
+  lcd.print("/");
+  if(rtc.day() < 10){
+    lcd.print("0" + String(rtc.day()));
+  }else{
+    lcd.print(rtc.day());
+  }
+
+  lcd.setCursor(7,0);
+  if(rtc.hour()<12){
+    lcd.print("0" + String(rtc.hour()));
+  }  else{
+    lcd.print(String(rtc.hour()));
+  }
+  lcd.print(":");
+  lcd.setCursor(10,0);
+  if(rtc.hour()<12){
+    lcd.print("0"  + String(rtc.minute()));
+  }  else{
+    lcd.print(String(rtc.minute()));
+  }
 
 
   bpm = 0;
@@ -294,8 +334,6 @@ void loop() {
 
   //vr recog
   vrRecog();
-
-  sendWarning();
 
 }
 
@@ -341,14 +379,37 @@ float readDHT() {
 void createDisplay(){
   rtc.refresh();
   lcd.clear();
-  lcd.setCursor(1, 0);
-  lcd.print(0);
-  lcd.setCursor(0, 1);
-  lcd.print("Body Temp: " + String(dht.readHumidity()) + "C");
+  lcd.setCursor(0,0);
+  if(rtc.month() < 10){
+    lcd.print("0" + String(rtc.month()));
+  }else{
+    lcd.print(rtc.month());
+  }
+  lcd.print("/");
+  if(rtc.day() < 10){
+    lcd.print("0" + String(rtc.day()));
+  }else{
+    lcd.print(rtc.day());
+  }
+
+  lcd.setCursor(7,0);
+  if(rtc.hour()<12){
+    lcd.print("0" + String(rtc.hour()));
+  }  else{
+    lcd.print(String(rtc.hour()));
+  }
+  lcd.print(":");
+  lcd.setCursor(10,0);
+  if(rtc.hour()<12){
+    lcd.print("0"  + String(rtc.minute()));
+  }  else{
+    lcd.print(String(rtc.minute()));
+  }
+
 
 }
 
-//function to output current time to serial monitor
+// function to output current time to serial monitor
 void printTime() {
   rtc.refresh();
   Serial1.println(String(rtc.hour()) + ":" + String(rtc.minute()) + ":" + String(rtc.second()));
@@ -545,14 +606,5 @@ void vrRecog(){
     }
     /** voice recognized */
     // printVR(buf);
-  }
-}
-
-//send messages input by serial1
-void sendWarning(){
-  if(Serial1.available()){
-    String str = Serial1.readStringUntil('\n');
-    sendMessage(str);
-    Serial.println(str);
   }
 }
