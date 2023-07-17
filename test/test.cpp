@@ -253,53 +253,12 @@ void loop() {
     digitalWrite(motorPinDown, LOW);
     Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
   }
-  //else if(digitalRead(bedUpPin) ==HIGH && (millis() - touchInterval > 1000)){
-  //   touchInterval = millis();
-  //   digitalWrite(motorPinUp, LOW);
-  //   digitalWrite(motorPinDown, LOW);
-  //   Serial.println("pin 11: " + String(digitalRead(bedUpPin)));
-  // }else if(digitalRead(bedUpPin) ==LOW && (millis() - touchInterval > 1000)){
-  //   touchInterval = millis();
-  //   Serial.println("pin 11: " + String(digitalRead(bedUpPin)));
-  // }
+
 
 
 
   createDisplay();
-  // printTime();
 
-  //   rtc.refresh();
-  // lcd.clear();
-  // lcd.setCursor(0,0);
-  // if(rtc.month() < 10){
-  //   lcd.print("0" + String(rtc.month()));
-  // }else{
-  //   lcd.print(rtc.month());
-  // }
-  // lcd.print("/");
-  // if(rtc.day() < 10){
-  //   lcd.print("0" + String(rtc.day()));
-  // }else{
-  //   lcd.print(rtc.day());
-  // }
-
-  // lcd.setCursor(7,0);
-  // if(rtc.hour()<12){
-  //   lcd.print("0" + String(rtc.hour()));
-  // }  else{
-  //   lcd.print(String(rtc.hour()));
-  // }
-  // lcd.print(":");
-  // lcd.setCursor(10,0);
-  // if(rtc.hour()<10){
-  //   lcd.print("0"  + String(rtc.minute()));
-  // }  else{
-  //   lcd.print(String(rtc.minute()));
-  // }
-  // lcd.setCursor(0, 1);
-  // lcd.print("bpm:"+String(bpm));
-
-  //bpm=0;
   if(bpm>0){
     float humidity = dht.readHumidity();
     float roomTemp = dht.readTemperature();
@@ -525,6 +484,7 @@ void bedLiftingFunction2(){
 
 
 //to find patient is on the bed or not
+
 int isWeightDetected() {
   const int serialPrintInterval = 1000;
 
@@ -586,6 +546,7 @@ void checkPatientThere(){
   if(millis() - functionStartTime > 300000){
     //send alert
     sendMessage("Patient: Janith is not on the bed");
+    functionStartTime = millis();
   }
 }
 
