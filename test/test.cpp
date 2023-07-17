@@ -1,4 +1,4 @@
-#define USE_ARDUINO_INTERRUPTS true
+// #define USE_ARDUINO_INTERRUPTS true
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <DallasTemperature.h>
@@ -78,16 +78,17 @@ OneWire bTempPin(bodyTempPin);
 DallasTemperature bodyTempSensor(&bTempPin);
 
 //heart pulse sensor
-PulseSensorPlayground pulseSensor;
+// PulseSensorPlayground pulseSensor;
 const int PulseWire = A2;       // PulseSensor PURPLE WIRE connected to ANALOG PIN 0
 const int LED = LED_BUILTIN;          // The on-board Arduino LED, close to PIN 13.
-int Threshold = 650;  
+int Threshold = 130;  
 int count = 0;
 int bpm = 0;
 unsigned long lastPulse = 0;
 int signal = 0;
 unsigned long lastBPM = 0;
 int currentBPM = 0;
+unsigned long lastCheck = 0;
 
 //DHT sensor
 #define DHTPIN 8
@@ -230,6 +231,9 @@ void setup() {
 
 
 void loop() { 
+  readPulse();
+  readBodyTemp();
+
   
 
   if(digitalRead(toggleModePin)==HIGH && toggleMode=="up" && (millis() - touchInterval > 1000)){
@@ -264,37 +268,38 @@ void loop() {
   createDisplay();
   // printTime();
 
-    rtc.refresh();
-  lcd.clear();
-  lcd.setCursor(0,0);
-  if(rtc.month() < 10){
-    lcd.print("0" + String(rtc.month()));
-  }else{
-    lcd.print(rtc.month());
-  }
-  lcd.print("/");
-  if(rtc.day() < 10){
-    lcd.print("0" + String(rtc.day()));
-  }else{
-    lcd.print(rtc.day());
-  }
+  //   rtc.refresh();
+  // lcd.clear();
+  // lcd.setCursor(0,0);
+  // if(rtc.month() < 10){
+  //   lcd.print("0" + String(rtc.month()));
+  // }else{
+  //   lcd.print(rtc.month());
+  // }
+  // lcd.print("/");
+  // if(rtc.day() < 10){
+  //   lcd.print("0" + String(rtc.day()));
+  // }else{
+  //   lcd.print(rtc.day());
+  // }
 
-  lcd.setCursor(7,0);
-  if(rtc.hour()<12){
-    lcd.print("0" + String(rtc.hour()));
-  }  else{
-    lcd.print(String(rtc.hour()));
-  }
-  lcd.print(":");
-  lcd.setCursor(10,0);
-  if(rtc.hour()<12){
-    lcd.print("0"  + String(rtc.minute()));
-  }  else{
-    lcd.print(String(rtc.minute()));
-  }
+  // lcd.setCursor(7,0);
+  // if(rtc.hour()<12){
+  //   lcd.print("0" + String(rtc.hour()));
+  // }  else{
+  //   lcd.print(String(rtc.hour()));
+  // }
+  // lcd.print(":");
+  // lcd.setCursor(10,0);
+  // if(rtc.hour()<10){
+  //   lcd.print("0"  + String(rtc.minute()));
+  // }  else{
+  //   lcd.print(String(rtc.minute()));
+  // }
+  // lcd.setCursor(0, 1);
+  // lcd.print("bpm:"+String(bpm));
 
-
-  bpm = 0;
+  //bpm=0;
   if(bpm>0){
     float humidity = dht.readHumidity();
     float roomTemp = dht.readTemperature();
@@ -308,7 +313,8 @@ void loop() {
   }
 
   //only check bpm and body temp critical in 5 min intervals
-  if(millis() - lastBPM > 300000){
+  if(millis() - lastCheck > 300000){
+    lastCheck=millis();
     checkBPM(bpm);
     checkBodyTemp(bodyTempSensor.getTempCByIndex(0));
   } 
@@ -342,6 +348,7 @@ void loop() {
 void readBodyTemp() {
   bodyTempSensor.requestTemperatures();
   Serial1.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
+  Serial.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
   delay(10);
 }
 
@@ -350,7 +357,8 @@ void readPulse() {
   // int pulse = random(60, 100);
   // Serial1.println("pulse = " + String(pulse));
   signal = analogRead(PulseWire);
-  if(signal > Threshold && millis() - lastPulse> 300){
+  //Serial.println(signal);
+  if(signal > Threshold && millis() - lastPulse> 400){
     count++;
     lastPulse = millis(); //get the last time a pulse was read
   }
@@ -359,6 +367,7 @@ void readPulse() {
     count = 0; //reset count
     lastBPM = millis(); //get the last time a BPM was read
     Serial1.println("bpm=" + String(bpm));
+    // Serial.println("bpm=" + String(bpm));
   }
 }
 
@@ -377,6 +386,7 @@ float readDHT() {
 
 
 void createDisplay(){
+  // bodyTempSensor.requestTemperatures();
   rtc.refresh();
   lcd.clear();
   lcd.setCursor(0,0);
@@ -400,13 +410,15 @@ void createDisplay(){
   }
   lcd.print(":");
   lcd.setCursor(10,0);
-  if(rtc.hour()<12){
+  if(rtc.minute()<10){
     lcd.print("0"  + String(rtc.minute()));
   }  else{
     lcd.print(String(rtc.minute()));
   }
-
-
+   lcd.setCursor(0, 1);
+  lcd.print("bpm:"+String(bpm));
+  lcd.setCursor(8, 1);
+  lcd.print("T:"+String(bodyTempSensor.getTempCByIndex(0)));
 }
 
 // function to output current time to serial monitor
