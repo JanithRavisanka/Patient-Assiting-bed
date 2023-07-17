@@ -233,6 +233,7 @@ void setup() {
 void loop() { 
   readPulse();
   readBodyTemp();
+  createDisplay();
 
   
 
@@ -253,11 +254,6 @@ void loop() {
     digitalWrite(motorPinDown, LOW);
     Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
   }
-
-
-
-
-  createDisplay();
 
   if(bpm>0){
     float humidity = dht.readHumidity();
@@ -391,6 +387,9 @@ void printTime() {
 //function to read serial input string start with "#" only
 void sendAlerts(String str){
   if(str.startsWith("#")){
+    //remove # from string
+    str.remove(0,1);
+
     sendMessage(str);
   }
 }
@@ -413,7 +412,8 @@ void sendMessage(String str){
   mySerial.print(str); //text content
   updateSerial();
   mySerial.write(26);
-  // updateSerial();
+  updateSerial();
+  Serial.print(str);
 }
 
 
@@ -484,7 +484,6 @@ void bedLiftingFunction2(){
 
 
 //to find patient is on the bed or not
-
 int isWeightDetected() {
   const int serialPrintInterval = 1000;
 
@@ -505,6 +504,7 @@ int isWeightDetected() {
   }
   return 0;
 }
+
 
 //to find over humidity or not
 int overHumidity(){
