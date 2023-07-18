@@ -56,7 +56,7 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 // const int bedDownPin = 13;
 
 const int toggleModePin = 12;
-const int bedUpPin = 11;
+const int bedUpPin = 53;
 const int bedDownPin = 46;
 bool invalid = false;
 unsigned long t = 0;
@@ -255,6 +255,13 @@ void loop() {
     Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
   }
 
+  //if bedUpPin high motor should stop
+  if(digitalRead(bedUpPin)==HIGH && millis() - touchInterval > 1000){
+    touchInterval = millis();
+    digitalWrite(motorPinUp, LOW);
+    digitalWrite(motorPinDown, LOW);
+
+  }
   if(bpm>0){
     float humidity = dht.readHumidity();
     float roomTemp = dht.readTemperature();
