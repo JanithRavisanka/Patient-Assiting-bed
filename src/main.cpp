@@ -45,7 +45,7 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 // const int bedDownPin = 13;
 
 const int toggleModePin = 12;
-const int bedUpPin = 11;
+const int bedUpPin = 53;
 const int bedDownPin = 46;
 bool invalid = false;
 unsigned long t = 0;

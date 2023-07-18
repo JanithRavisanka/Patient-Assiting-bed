@@ -166,13 +166,13 @@ void loop() {
 
         if((millis() - lastDosagesDataRetrieve)>=60000 ){
           Firebase.RTDB.getJSON(&fbdo, "/alerts/Janith/warnings"); //only every 10 s
-          Serial.println(fbdo.stringData().c_str());
+ 
           if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK){
               // printResult(fbdo);
             //   Serial.print(fbdo.stringData());
             //   Serial.write(fbdo.stringData());
             //send data to mega through serial
-            if(fbdo.stringData().length() > 0){
+            if(fbdo.stringData().length(         // Serial.println(fbdo.stringData().c_str());) > 0){
                 Serial.write(fbdo.stringData().c_str());
             }
 
