@@ -172,7 +172,10 @@ void loop() {
             //   Serial.print(fbdo.stringData());
             //   Serial.write(fbdo.stringData());
             //send data to mega through serial
-            Serial.write("#" + fbdo.stringData().c_str());
+            if(fbdo.stringData().length() > 0){
+                Serial.write(fbdo.stringData().c_str());
+            }
+
 
           }
           Firebase.RTDB.deleteNode(&fbdo, "/alerts/Janith/warnings");
@@ -184,7 +187,9 @@ void loop() {
           if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK){
               // printResult(fbdo); // see addons/RTDBHelper.h
             //   Serial.print(fbdo.stringData());
-            Serial.write("#" + fbdo.stringData().c_str());
+            if(fbdo.stringData().length() > 0){
+                Serial.write(fbdo.stringData().c_str());
+            }
           }
           Firebase.RTDB.deleteNode(&fbdo, "/dosages/Janith/dosages");
           lastWarningDataRetrieve = millis();
