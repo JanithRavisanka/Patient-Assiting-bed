@@ -76,6 +76,7 @@ unsigned long functionEndTime = 0;
 #define bodyTempPin 9
 OneWire bTempPin(bodyTempPin);
 DallasTemperature bodyTempSensor(&bTempPin);
+int bodyTempArr[3] = {0,0,0};
 
 //heart pulse sensor
 // PulseSensorPlayground pulseSensor;
@@ -89,6 +90,7 @@ int signal = 0;
 unsigned long lastBPM = 0;
 int currentBPM = 0;
 unsigned long lastCheck = 0;
+int bpmArr[3] = {0,0,0};
 
 //DHT sensor
 #define DHTPIN 8
@@ -272,6 +274,7 @@ void loop() {
 
   }
   if(bpm>0){
+    bodyTempSensor.requestTemperatures();
     float humidity = dht.readHumidity();
     float roomTemp = dht.readTemperature();
     float bodyTemp = bodyTempSensor.getTempCByIndex(0);
@@ -335,6 +338,7 @@ void readPulse() {
   }
   if(millis() - lastBPM > 60000){
     bpm = count;
+    sortBPM(bpm);
     count = 0; //reset count
     lastBPM = millis(); //get the last time a BPM was read
     Serial1.println("bpm=" + String(bpm));
@@ -433,13 +437,13 @@ void sendMessage(String str){
 }
 
 
-//create function to identify critical heart rate 
+//create function to identify critical heart rate for 5 min intervals
 void checkBPM(int bpm){
-  if(bpm > 100){
+  if(averageBPM() > 100){
     //send alert
     sendMessage("Patient: Janith heart rate is too high");
   }
-  else if(bpm < 60){
+  else if(averageBPM()< 60){
     //send alert
     sendMessage("Patient: Janith heart rate is too low");
   }
@@ -447,11 +451,11 @@ void checkBPM(int bpm){
 
 //create function to identify critical body temperature
 void checkBodyTemp(float bodyTemp){
-  if(bodyTemp > 37.5){
+  if(averageBodyTemp() > 37.5){
     //send alert
     sendMessage("Patient: Janith Body temperature is too high");
   }
-  else if(bodyTemp < 35.5){
+  else if(averageBodyTemp() < 35.5){
     //send alert
     sendMessage("Patient: Janith body temperature is too low");
   }
@@ -599,10 +603,59 @@ void vrRecog(){
 }
 
 
-void SerialRead(){
-  if(Serial1.available() && (Serial.readStringUntil('\n')).substring(0,1)=="#"){
-    Serial.println(Serial1.readStringUntil('\n'));
+//create queue sorting algo to store data in bpmArr
+void sortBPM(int bpm){
+  for(int i=0; i<3; i++){
+    if(bpmArr[i]==0){
+      bpmArr[i]=bpm;
+      break;
+    }
+  }
+  for(int i=0; i<3; i++){
+    for(int j=i+1; j<3; j++){
+      if(bpmArr[i]>bpmArr[j]){
+        int temp = bpmArr[i];
+        bpmArr[i] = bpmArr[j];
+        bpmArr[j] = temp;
+      }
+    }
   }
 }
 
+//function to calculate average bpm
+int averageBPM(){
+  int sum = 0;
+  for(int i=0; i<3; i++){
+    sum += bpmArr[i];
+  }
+  return sum/3;
+}
+
+//create queue sorting algo to store data in bodyTempArr
+void sortBodyTemp(float bodyTemp){
+  for(int i=0; i<3; i++){
+    if(bodyTempArr[i]==0){
+      bodyTempArr[i]=bodyTemp;
+      break;
+    }
+  }
+  for(int i=0; i<3; i++){
+    for(int j=i+1; j<3; j++){
+      if(bodyTempArr[i]>bodyTempArr[j]){
+        int temp = bodyTempArr[i];
+        bodyTempArr[i] = bodyTempArr[j];
+        bodyTempArr[j] = temp;
+      }
+    }
+  }
+}
+
+//function to calculate average body temp
+int averageBodyTemp(){
+  int sum = 0;
+  for(int i=0; i<3; i++){
+    sum += bodyTempArr[i];
+  }
+  return sum/3;
+}
 
