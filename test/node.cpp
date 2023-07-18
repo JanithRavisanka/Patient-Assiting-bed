@@ -172,7 +172,7 @@ void loop() {
             //   Serial.print(fbdo.stringData());
             //   Serial.write(fbdo.stringData());
             //send data to mega through serial
-            if(fbdo.stringData().length(         // Serial.println(fbdo.stringData().c_str());) > 0){
+            if(fbdo.stringData().length() > 0){
                 Serial.write(fbdo.stringData().c_str());
             }
 

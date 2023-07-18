@@ -57,7 +57,7 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 
 const int toggleModePin = 12;
 const int bedUpPin = 53;
-const int bedDownPin = 46;
+const int bedDownPin = 47;
 bool invalid = false;
 unsigned long t = 0;
 bool newDataReady = 0;
@@ -220,7 +220,7 @@ void setup() {
   LoadCell.start(stabilizingtime, _tare);
   if (LoadCell.getTareTimeoutFlag()) {
     Serial.println("Timeout, check MCU > HX711 wiring and pin designations");
-    while (1);
+    // while (1);
     Serial.println("LoadCell Startup is complete");
   } else {
     LoadCell.setCalFactor(calibrationValue);
@@ -234,6 +234,7 @@ void loop() {
   readPulse();
   readBodyTemp();
   createDisplay();
+  SerialRead();
 
   
 
@@ -254,6 +255,14 @@ void loop() {
     digitalWrite(motorPinDown, LOW);
     Serial.println("motor pin up:" + String(digitalRead(motorPinUp))+ ","+"motor pin down:" + String(digitalRead(motorPinDown)));
   }
+
+  //if bedDownPin high show in in serial moniter
+  if(digitalRead(bedDownPin)==HIGH && millis() - touchInterval > 1000){
+    touchInterval = millis();
+    Serial.println("bed down pin high");
+  }
+
+  
 
   //if bedUpPin high motor should stop
   if(digitalRead(bedUpPin)==HIGH && millis() - touchInterval > 1000){
@@ -310,8 +319,8 @@ void loop() {
 void readBodyTemp() {
   bodyTempSensor.requestTemperatures();
   Serial1.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
-  Serial.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
-  delay(10);
+  // Serial.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
+  // delay(10);
 }
 
 //create function to output random hr values without sensor readings
@@ -588,3 +597,12 @@ void vrRecog(){
     // printVR(buf);
   }
 }
+
+
+void SerialRead(){
+  if(Serial1.available() && (Serial.readStringUntil('\n')).substring(0,1)=="#"){
+    Serial.println(Serial1.readStringUntil('\n'));
+  }
+}
+
+
