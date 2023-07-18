@@ -164,7 +164,7 @@ void loop() {
 
         FirebaseJson json;
 
-        if((millis() - lastDosagesDataRetrieve)>=10000 ){
+        if((millis() - lastDosagesDataRetrieve)>=60000 ){
           Firebase.RTDB.getJSON(&fbdo, "/alerts/Janith/warnings"); //only every 10 s
           Serial.println(fbdo.stringData().c_str());
           if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK){
@@ -179,7 +179,7 @@ void loop() {
           lastDosagesDataRetrieve = millis();
         }
 
-        if((millis() - lastWarningDataRetrieve)>=300000 ){ //check every 5 minutes
+        if((millis() - lastWarningDataRetrieve)>=120000 ){ //check every 5 minutes
           Firebase.RTDB.getJSON(&fbdo, "/dosages/Janith/dosages");
           if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK){
               // printResult(fbdo); // see addons/RTDBHelper.h
