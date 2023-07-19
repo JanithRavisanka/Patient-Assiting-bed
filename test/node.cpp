@@ -75,24 +75,24 @@ void fcsUploadCallback(CFS_UploadStatusInfo info)
 
 
 
-void splitString(String str) {
-  String key = "";
-  String value = "";
-  bool isKey = true;
-  for (int i = 0; i < str.length(); i++) {
-    if (str[i] == '=') {
-      isKey = false;
-      continue;
-    }
-    if (isKey) {
-      key += str[i];
-    } else {
-      value += str[i];
-    }
-  }
-  //covert value into float
-  key = value.toFloat();
-}
+// void splitString(String str) {
+//   String key = "";
+//   String value = "";
+//   bool isKey = true;
+//   for (int i = 0; i < str.length(); i++) {
+//     if (str[i] == '=') {
+//       isKey = false;
+//       continue;
+//     }
+//     if (isKey) {
+//       key += str[i];
+//     } else {
+//       value += str[i];
+//     }
+//   }
+//   //covert value into float
+//   key = value.toFloat();
+// }
 
 
 String epochTimeConverter(unsigned long epochTime){
