@@ -154,10 +154,13 @@ void loop() {
 
     //send data to firestore
     Serial.print("Create a document...");
-    if (Firebase.Firestore.createDocument(&fbdo, FIREBASE_PROJECT_ID, "", documentPath.c_str(), content.raw()))
-        Serial.printf("ok\n%s\n\n", fbdo.payload().c_str());
-    else
+    if (Firebase.Firestore.createDocument(&fbdo, FIREBASE_PROJECT_ID, "", documentPath.c_str(), content.raw())){
+      Serial.printf("ok\n%s\n\n", fbdo.payload().c_str());
+      lastDataSent = millis();
+    }else{
         Serial.println(fbdo.errorReason());  
+    }
+
   }
 
     if (Firebase.ready()){
