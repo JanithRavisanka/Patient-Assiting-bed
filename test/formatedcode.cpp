@@ -345,16 +345,14 @@ void vrRecog(){
       case onRecord:
       case onRecord1:
       case onRecord2:
-
-
-        /** turn on LED */
-        // digitalWrite(led, HIGH);
+        digitalWrite(motorPinDown, LOW);
+        digitalWrite(motorPinUp, HIGH);
         break;
       case offRecord:
       case offRecord1:
       case offRecord2:
-        /** turn off LED*/
-        // digitalWrite(led, LOW);
+        digitalWrite(motorPinUp, LOW);
+        digitalWrite(motorPinDown, HIGH);
         break;
       default:
         Serial.println("Record function undefined");
