@@ -27,7 +27,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 //vr module
 VR myVR(10, 36);    // 2:RX 3:TX, you can choose your favorite pins.
-
 uint8_t records[7]; // save record
 uint8_t buf[64];
 
@@ -58,7 +57,6 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 const int toggleModePin = 12;
 const int bedUpPin = 53;
 const int bedDownPin = 47;
-bool invalid = false;
 unsigned long t = 0;
 bool newDataReady = 0;
 String toggleMode = "up";
@@ -207,7 +205,7 @@ void setup() {
   updateSerial();
   mySerial.println("AT+CMGF=1"); // Configuring TEXT mode
   updateSerial();
-  mySerial.println("AT+CMGS=\"+Z94703487817\"");//change ZZ with country code and xxxxxxxxxxx with phone number to sms
+  mySerial.println("AT+CMGS=\"+94703487817\"");//change ZZ with country code and xxxxxxxxxxx with phone number to sms
   updateSerial();
   mySerial.print("Message send from Patient Assisting Bed.This is a testing message"); //text content
   updateSerial();
@@ -318,13 +316,6 @@ void loop() {
 }
 
 
-//read body temperature
-void readBodyTemp() {
-  bodyTempSensor.requestTemperatures();
-  Serial1.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
-  // Serial.println("bTemp=" + String(bodyTempSensor.getTempCByIndex(0)));
-  // delay(10);
-}
 
 //create function to output random hr values without sensor readings
 void readPulse() {
@@ -405,14 +396,14 @@ void printTime() {
 
 
 //function to read serial input string start with "#" only
-void sendAlerts(String str){
-  if(str.startsWith("#")){
-    //remove # from string
-    str.remove(0,1);
+// void sendAlerts(String str){
+//   if(str.startsWith("#")){
+//     //remove # from string
+//     str.remove(0,1);
 
-    sendMessage(str);
-  }
-}
+//     sendMessage(str);
+//   }
+// }
 
 
 void updateSerial(){
@@ -528,10 +519,6 @@ int isWeightDetected() {
 
 //to find over humidity or not
 int overHumidity(){
-  // delay(10);
-
-  // sensors_event_t eventH;
-  // dht.humidity().getEvent(&eventH);
   if (isnan(dht.readHumidity()) || isnan(dht.readTemperature())) {
     Serial.println(F("Error reading humidity!"));
     
@@ -546,8 +533,6 @@ int overHumidity(){
 
 //to find over temperature or not
 int overTemperature(){
-  // delay(10);
-  // dht.temperature().getEvent(&eventT);
   if (isnan(dht.readHumidity()) || isnan(dht.readTemperature())) {
     Serial.println(F("Error reading temperature!"));
   }
@@ -624,11 +609,24 @@ void sortBPM(int bpm){
 
 //function to calculate average bpm
 int averageBPM(){
+  //check how much values are 0
+  int count = 0;
+  for(int i=0; i<3; i++){
+    if(bpmArr[i]==0){
+      count++;
+    }
+  }
+
   int sum = 0;
   for(int i=0; i<3; i++){
     sum += bpmArr[i];
   }
-  return sum/3;
+  if(count==3){
+    return 0;
+  }else{
+    return sum/(3-count);
+  }
+
 }
 
 //create queue sorting algo to store data in bodyTempArr
@@ -652,10 +650,21 @@ void sortBodyTemp(float bodyTemp){
 
 //function to calculate average body temp
 int averageBodyTemp(){
+  //check how much values are 0
+  int count = 0;
+  for(int i=0; i<3; i++){
+    if(bodyTempArr[i]==0){
+      count++;
+    }
+  }
   int sum = 0;
   for(int i=0; i<3; i++){
     sum += bodyTempArr[i];
   }
-  return sum/3;
+  if(count==3){
+    return 0;
+  }else{
+    return sum/(3-count);
+  }
 }
 
