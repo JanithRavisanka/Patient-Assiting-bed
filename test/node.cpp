@@ -198,3 +198,42 @@ void loop() {
   }
   
 }
+
+//function to read a string sent from serial and split it into key value pairs
+void splitString(String str) {
+  String key = "";
+  String value = "";
+  bool isKey = true;
+  //check if str starts with # and end with $
+  if(str[0] != '#' || str[str.length()-1] != '$'){
+    //remove both start and end characters
+    str.remove(0,1);
+    str.remove(str.length()-1,1);
+
+    for (int i = 0; i < str.length(); i++) {
+    if (str[i] == '=') {
+      isKey = false;
+      continue;
+    }
+    if (isKey) {
+      key += str[i];
+    } else {
+      value += str[i];
+    }
+  }
+  //covert value into float
+  if(key == "bpm"){
+    bpm = value.toInt();
+  }else if(key == "bTemp"){
+    bTemp = value.toFloat();
+  }else if(key == "roomTemp"){
+    roomTemp = value.toFloat();
+  }else if(key == "humidity"){
+    humidity = value.toFloat();
+  }
+
+  }
+
+}
+
+

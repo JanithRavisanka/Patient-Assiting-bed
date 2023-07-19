@@ -263,10 +263,10 @@ void sendSensorDataToNode(){
         float bodyTemp = bodyTempSensor.getTempCByIndex(0);
         currentBPM = bpm;  //show curent bpm in display
 
-        Serial1.println("humidity =" + String(humidity));
-        Serial1.println("roomTemp=" + String(roomTemp));
-        Serial1.println("bodyTemp=" + String(bodyTemp));
-        Serial1.println("bpm=" + String(bpm));
+        Serial.println("#humidity =" + String(humidity) + "$");
+        Serial.println("#roomTemp=" + String(roomTemp) + "$");
+        Serial.println("#bodyTemp=" + String(bodyTemp) + "$");
+        Serial.println("#bpm=" + String(bpm) + "$");
     } 
 }
 
