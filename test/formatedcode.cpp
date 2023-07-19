@@ -385,7 +385,6 @@ void sortBPM(int bpm){
 
 //function to calculate average bpm
 int averageBPM(){
-  //check how much values are 0
   int count = 0;
   for(int i=0; i<3; i++){
     if(bpmArr[i]==0){
@@ -507,5 +506,19 @@ void createDisplay(){
         lcd.setCursor(8, 1);
         lcd.print("T:"+String(bodyTempSensor.getTempCByIndex(0)));
     }
+
+}
+
+//read a string from serial 
+String readString(){
+  String str = "";
+  if(Serial.available()){
+    str += Serial.readStringUntil('\n');
+    if(str.charAt(0)!='*'){
+      str = str.substring(1);
+      sendMessage(str);
+      Serial.println(str);
+    }
+  }
 
 }
